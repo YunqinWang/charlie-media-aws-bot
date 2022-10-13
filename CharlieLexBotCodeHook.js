@@ -10,6 +10,19 @@ function close(sessionAttributes, fulfillmentState, message) {
     };
 }
 
+function elicitSlot(sessionAttributes, intentName, slots,slotToElicit,message) {
+    return {
+        sessionAttributes,
+        dialogAction: {
+            type: 'ElicitSlot',
+            intentName,
+            slots,
+            slotToElicit,
+            message,
+          }
+    } ;
+}
+
 // --------------- Events -----------------------
  
 function dispatch(intentRequest, callback) {
@@ -20,22 +33,42 @@ function dispatch(intentRequest, callback) {
             break;
         default:
             callback(close(sessionAttributes, 'Fulfilled',
-            {'contentType': 'PlainText', 'content': `Okay`}));
+            {'contentType': 'PlainText', 'content': `Okay`}))
             return;
     }
     
 }
 
 function GreetingIntent(intentRequest, callback){
-    console.log(`request received for userId=${intentRequest.userId}, intentName=${intentRequest.currentIntent.name}`);
     const sessionAttributes = intentRequest.sessionAttributes;
+    console.log(`request received for userId=${intentRequest.userId}, intentName=${intentRequest.currentIntent.name}`);
     const slots = intentRequest.currentIntent.slots;
     const service = slots.GeneralServiceSlots;
     
     console.log(service);
+
     
-    callback(close(sessionAttributes, 'Fulfilled',
-    {'contentType': 'PlainText', 'content': `Okay, you need ${service} `}));
+    switch(service){
+        case "learn-more":{
+            console.log("here");
+            callback(elicitSlot(
+                sessionAttributes, 
+                "LearnMoreIntent",
+                {"LearnMoreSlot": "Tell me more"},
+                "LearnMoreSlot",
+                {
+                    'contentType': 'PlainText', 
+                    'content': "Charlie Media was founded by Jiangsha Meng in 2021 "
+                }
+            ));             
+            break;     
+        }
+        default:
+            callback(close(sessionAttributes, 'Fulfilled',
+            {'contentType': 'PlainText', 'content': `Okay, you need ${service} `}));
+    }
+
+    
 }
  
 // --------------- Main handler -----------------------
