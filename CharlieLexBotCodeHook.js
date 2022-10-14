@@ -1,4 +1,4 @@
-// Close dialog with the customer, reporting fulfillmentState of Failed or Fulfilled ("Thanks, your pizza will arrive in 20 minutes")
+// Close dialog with the customer, reporting fulfillmentState of Failed or Fulfilled
 function close(sessionAttributes, fulfillmentState, message) {
     return {
         sessionAttributes,
@@ -10,6 +10,7 @@ function close(sessionAttributes, fulfillmentState, message) {
     };
 }
 
+// Elicit the next slot
 function elicitSlot(sessionAttributes, intentName, slots,slotToElicit,message) {
     return {
         sessionAttributes,
@@ -38,12 +39,14 @@ function dispatch(intentRequest, callback) {
         case "TellMoreIntent":
             TellMoreIntent(intentRequest, callback);
             break;
+        // case "ProjectIntent":
+        //     ProjectIntent(intentRequest, callback);
+        //     break;
         default:
             callback(close(sessionAttributes, 'Fulfilled',
             {'contentType': 'PlainText', 'content': `Okay`}))
             return;
     }
-    
 }
 
 
@@ -114,14 +117,16 @@ function LearnMoreIntent(intentRequest, callback){
             ));             
             break; 
         case "Discuss project with us":
+            console.log("Discuss project")
             callback(elicitSlot(
                 sessionAttributes, 
-                "LearnMoreIntent",
-                {"LearnMoreSlot": "Tell me more"},
-                "LearnMoreSlot",
+                "ProjectIntent",
+                {"FirstNameSlot": null,
+                 "LastNameSlot": null},
+                "FirstNameSlot",
                 {
-                   "contentType":"PlainText",
-                   "content":"How can we help you today?"
+                    "contentType":"PlainText",
+                    "content":"Great! Let's get some more information to make that connection."
                 }
             ));             
             break; 
@@ -139,18 +144,19 @@ function TellMoreIntent(intentRequest, callback){
     const sessionAttributes = intentRequest.sessionAttributes;
     const slots = intentRequest.currentIntent.slots;
     const next = slots.TellMoreSlot;
-    console.log(next)
+    console.log(slots)
     switch(next){
         case "Discuss project with us":
-            console.log("Discuss project with us")
+            console.log("Discuss project")
             callback(elicitSlot(
                 sessionAttributes, 
-                "TellMoreIntent",
-                {"TellMoreSlot": null},
-                "TellMoreSlot",
+                "ProjectIntent",
+                {"FirstNameSlot": null,
+                 "LastNameSlot": null},
+                "FirstNameSlot",
                 {
                     "contentType":"PlainText",
-                    "content":"We're a proud HubSpot Elite Partner and have been a dedicated member of the HubSpot Partner Program since 2012.We also build some pretty crazy (awesome) stuff on HubSpot that most people don't think is possible 😎 You can read more about us here!"
+                    "content":"Great! Let's get some more information to make that connection."
                 }
             ));             
             break;
