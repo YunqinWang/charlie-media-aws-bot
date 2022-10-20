@@ -39,9 +39,12 @@ function dispatch(intentRequest, callback) {
         case "TellMoreIntent":
             TellMoreIntent(intentRequest, callback);
             break;
-        // case "ProjectIntent":
-        //     ProjectIntent(intentRequest, callback);
-        //     break;
+        case "ProjectIntent":
+            ProjectIntent(intentRequest, callback);
+            break;
+        case "SpecificServiceIntent":
+            SpecificServiceIntent(intentRequest, callback);
+            break;
         default:
             callback(close(sessionAttributes, 'Fulfilled',
             {'contentType': 'PlainText', 'content': `Okay`}))
@@ -69,7 +72,7 @@ function GreetingIntent(intentRequest, callback){
                 "LearnMoreSlot",
                 {
                     "contentType": "PlainText",
-                    "content":"Charlie Media was founded by Jiangsha Meng in 2021. Fast forward to 2022 and Impulse Creative is home to over 45 Awesome Humans who are dedicated to helping our clients grow smarter."
+                    "content":"Charlie Media was founded by Jiangsha Meng in 2021. \nFast forward to 2022 and Impulse Creative is home to over 45 Awesome Humans who are dedicated to helping our clients grow smarter."
                 }
             ));
             // "content": "{\"messages\":[{\"type\":\"PlainText\",\"group\":1,\"value\":\"Hello\"},{\"type\":\"PlainText\",\"group\":2,\"value\":\"Hey\"}]}"
@@ -89,7 +92,6 @@ function LearnMoreIntent(intentRequest, callback){
     const sessionAttributes = intentRequest.sessionAttributes;
     const slots = intentRequest.currentIntent.slots;
     const next = slots.LearnMoreSlot;
-    console.log(next)
     switch(next){
         case "Tell me more":
             console.log("Tell me more")
@@ -126,7 +128,7 @@ function LearnMoreIntent(intentRequest, callback){
                 "FirstNameSlot",
                 {
                     "contentType":"PlainText",
-                    "content":"Great! Let's get some more information to make that connection."
+                    "content":"Great! Let's get some more information to make that connection. What's your first name?"
                 }
             ));             
             break; 
@@ -156,7 +158,7 @@ function TellMoreIntent(intentRequest, callback){
                 "FirstNameSlot",
                 {
                     "contentType":"PlainText",
-                    "content":"Great! Let's get some more information to make that connection."
+                    "content":"Great! Let's get some more information to make that connection. What's your first name?"
                 }
             ));             
             break;
@@ -177,9 +179,56 @@ function TellMoreIntent(intentRequest, callback){
             {'contentType': 'PlainText', 'content': `Okay, you need ${next} `}));
     }
 }
- 
+
 
 //ProjectIntent
+function ProjectIntent(intentRequest, callback){
+    console.log("intentRequest",intentRequest);
+    let sessionAttributes = intentRequest.sessionAttributes;
+    const slots = intentRequest.currentIntent.slots;
+    console.log("ProjectIntent",slots);
+    if (slots.FirstNameSlot==null) {
+        slots.FirstNameSlot = intentRequest.inputTranscript;
+        sessionAttributes=Object.assign(sessionAttributes,{"firstName":slots.FirstNameSlot});
+        callback(elicitSlot(
+            sessionAttributes, 
+            "ProjectIntent",
+            {"FirstNameSlot": intentRequest.inputTranscript,
+             "LastNameSlot": null},
+            "FirstNameSlot",
+            {
+                "contentType":"PlainText",
+                "content":"What's your last name?"
+            }
+        ))
+    }
+    
+    else {
+        slots.LastNameSlot = intentRequest.inputTranscript;
+        sessionAttributes=Object.assign(sessionAttributes,{"lastName":slots.LastNameSlot});
+        callback(elicitSlot(
+            sessionAttributes, 
+            "SpecificServiceIntent",
+            {"SpecificServiceSlot": null},
+            "SpecificServiceSlot",
+            {
+                "contentType":"PlainText",
+                "content":"What service are you specifically interested in connecting with us about?"
+            }
+        ))
+    };             
+}
+
+function SpecificServiceIntent(intentRequest, callback){
+    const slots = intentRequest.currentIntent.slots;
+    let sessionAttributes = intentRequest.sessionAttributes;
+    sessionAttributes=Object.assign(sessionAttributes,{"specificService":slots.SpecificServiceSlot});
+    callback(close(sessionAttributes, 'Fulfilled',
+    {'contentType': 'PlainText', 'content': `Terrific! Our awesome team member, Somer Baier, will email you soon to share further information on these services & coordinate next steps! 🙂`}));
+    
+}
+ 
+
 
 // --------------- Main handler -----------------------
  
