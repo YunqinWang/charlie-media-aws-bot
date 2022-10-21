@@ -91,41 +91,7 @@ function InitialIntent(intentRequest, callback){
         {
             "contentType": "PlainText",
             "content":"How can we help you today?"
-        },
-        {
-            "contentType": "application/vnd.amazonaws.card.generic",
-            "genericAttachments": [
-              {
-                "attachmentLinkUrl": null,
-                "buttons": [
-                  {
-                    "text": "Learn more about Charlie Media",
-                    "value": "Learn more about Charlie Media"
-                  },
-                  {
-                    "text": "Need website help",
-                    "value": "Need website help"
-                  },
-                  {
-                    "text": "Need web/mobile app",
-                    "value": "Need web/mobile app"
-                  },
-                  {
-                    "text": "Need API integrations",
-                    "value": "Need API integrations"
-                  },
-                  {
-                    "text": "Need help with something else",
-                    "value": "Need help with something else"
-                  }
-                ],
-                "imageUrl": null,
-                "subTitle": " ",
-                "title": "How can we help you today?"
-              }
-            ],
-            "version": "1"
-          },
+        }
     ))
 }
 
@@ -196,8 +162,8 @@ function GreetingIntent(intentRequest, callback){
                 }
             ));
             break;
-        
-        default:
+
+        case "Need help with something else":
             callback(elicitSlot(
                 sessionAttributes,
                 "OtherServiceIntent",
@@ -208,6 +174,11 @@ function GreetingIntent(intentRequest, callback){
                     "content":"Got it. In a few sentences, can you tell us what your project is about?"
                 }
             ));
+            break;
+        
+        default:
+            callback(close(sessionAttributes, 'Fulfilled',
+            {'contentType': 'PlainText', 'content': `Okay, you need ${next}.`}));
     }
 }
 
