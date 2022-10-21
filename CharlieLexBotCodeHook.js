@@ -11,7 +11,7 @@ function close(sessionAttributes, fulfillmentState, message) {
 }
 
 // Elicit the next slot
-function elicitSlot(sessionAttributes, intentName, slots,slotToElicit,message) {
+function elicitSlot(sessionAttributes, intentName, slots,slotToElicit,message,responseCard) {
     return {
         sessionAttributes,
         dialogAction: {
@@ -20,6 +20,7 @@ function elicitSlot(sessionAttributes, intentName, slots,slotToElicit,message) {
             slots,
             slotToElicit,
             message,
+            responseCard
           }
     } ;
 }
@@ -30,6 +31,9 @@ function elicitSlot(sessionAttributes, intentName, slots,slotToElicit,message) {
 function dispatch(intentRequest, callback) {
     const sessionAttributes = intentRequest.sessionAttributes;
     switch(intentRequest.currentIntent.name){
+        case "InitialIntent":
+            InitialIntent(intentRequest, callback);
+            break;
         case "GreetingIntent":
             GreetingIntent(intentRequest, callback);
             break;
@@ -51,7 +55,20 @@ function dispatch(intentRequest, callback) {
         case "TimelineIntent":
             elicitFirstName(intentRequest, callback);
             break;
-        
+        case "AppIntent":
+            AppIntent(intentRequest, callback);
+            break;
+        case "AppProjectAboutIntent":
+            AppProjectAboutIntent(intentRequest, callback);
+            break;
+        case "APIIntent":
+            APIIntent(intentRequest, callback);
+            break;
+        case "ElseToKnowIntent":
+            ElseToKnowIntent(intentRequest, callback);
+        case "OtherServiceIntent":
+            OtherServiceIntent(intentRequest, callback);
+
         case "SpecificServiceIntent":
             SpecificServiceIntent(intentRequest, callback);
             break;
@@ -63,6 +80,56 @@ function dispatch(intentRequest, callback) {
 }
 
 
+function InitialIntent(intentRequest, callback){
+    console.log("initial",intentRequest)
+    let sessionAttributes = intentRequest.sessionAttributes;
+    callback(elicitSlot(
+        sessionAttributes,
+        "GreetingIntent",
+        {"GeneralServiceSlots": null},
+        "GeneralServiceSlots",
+        {
+            "contentType": "PlainText",
+            "content":"How can we help you today?"
+        },
+        {
+            "contentType": "application/vnd.amazonaws.card.generic",
+            "genericAttachments": [
+              {
+                "attachmentLinkUrl": null,
+                "buttons": [
+                  {
+                    "text": "Learn more about Charlie Media",
+                    "value": "Learn more about Charlie Media"
+                  },
+                  {
+                    "text": "Need website help",
+                    "value": "Need website help"
+                  },
+                  {
+                    "text": "Need web/mobile app",
+                    "value": "Need web/mobile app"
+                  },
+                  {
+                    "text": "Need API integrations",
+                    "value": "Need API integrations"
+                  },
+                  {
+                    "text": "Need help with something else",
+                    "value": "Need help with something else"
+                  }
+                ],
+                "imageUrl": null,
+                "subTitle": " ",
+                "title": "How can we help you today?"
+              }
+            ],
+            "version": "1"
+          },
+    ))
+}
+
+
 //options:
 //Learn more about Charlie Media
 //Need website 
@@ -70,6 +137,8 @@ function dispatch(intentRequest, callback) {
 //Need API integrations
 //Other
 function GreetingIntent(intentRequest, callback){
+    console.log("greeting",intentRequest);
+
     let sessionAttributes = intentRequest.sessionAttributes;
     const slots = intentRequest.currentIntent.slots;
     const next = slots.GeneralServiceSlots;
@@ -100,10 +169,45 @@ function GreetingIntent(intentRequest, callback){
                     "content":"Awesome, do you have an existing domain?"
                 }
             ));
+            break;
+
+        case "Need web/mobile app":
+            callback(elicitSlot(
+                sessionAttributes,
+                "AppIntent",
+                {"AppSlot": null},
+                "AppSlot",
+                {
+                    "contentType": "PlainText",
+                    "content":"Awesome, what type of development are you looking for?"
+                }
+            ));
+            break;
+
+        case "Need API integrations":
+            callback(elicitSlot(
+                sessionAttributes,
+                "APIIntent",
+                {"APISlot": null},
+                "APISlot",
+                {
+                    "contentType": "PlainText",
+                    "content":"Great, what's your project about?"
+                }
+            ));
+            break;
         
         default:
-            callback(close(sessionAttributes, 'Fulfilled',
-            {'contentType': 'PlainText', 'content': `Okay, you need ${next}.`}));
+            callback(elicitSlot(
+                sessionAttributes,
+                "OtherServiceIntent",
+                {"OtherServiceSlot": null},
+                "OtherServiceSlot",
+                {
+                    "contentType": "PlainText",
+                    "content":"Got it. In a few sentences, can you tell us what your project is about?"
+                }
+            ));
     }
 }
 
@@ -253,9 +357,6 @@ function ProjectIntent(intentRequest, callback){
 function DomainIntent(intentRequest, callback){
     let sessionAttributes = intentRequest.sessionAttributes;
     const slots = intentRequest.currentIntent.slots;
-    
-    console.log("domain intent", slots)
-
     slots.DomainSlot = intentRequest.inputTranscript;
     sessionAttributes=Object.assign(sessionAttributes,{"domain":slots.DomainSlot});
     callback(elicitSlot(
@@ -268,29 +369,91 @@ function DomainIntent(intentRequest, callback){
             "content":"What are you looking to accomplish with the website?"
         }
     ))
-
 }
 
 function WebsiteIntent(intentRequest, callback){
-    console.log(intentRequest);
     let sessionAttributes = intentRequest.sessionAttributes;
     const slots = intentRequest.currentIntent.slots;
     const next = slots.WebsiteSlots;
     sessionAttributes = Object.assign(sessionAttributes,{"website":next});
-    
-        callback(elicitSlot(
-            sessionAttributes,
-            "TimelineIntent",
-            {"TimelineSlot": null},
-            "TimelineSlot",
-            {
-                "contentType":"PlainText",
-                "content":"How quickly are you looking to have the project done?"
-            }
-        )); 
-
-                
+    elicitTimelineIntent(sessionAttributes, callback);  
 }
+
+function elicitTimelineIntent(sessionAttributes, callback){
+    callback(elicitSlot(
+        sessionAttributes,
+        "TimelineIntent",
+        {"TimelineSlot": null},
+        "TimelineSlot",
+        {
+            "contentType":"PlainText",
+            "content":"How quickly are you looking to have the project done?"
+        }
+    )); 
+}
+
+function AppIntent(intentRequest, callback){
+    let sessionAttributes = intentRequest.sessionAttributes;
+    const slots = intentRequest.currentIntent.slots;
+    const next = slots.AppSlots;
+    sessionAttributes = Object.assign(sessionAttributes,{"app":next});
+    callback(elicitSlot(
+        sessionAttributes,
+        "AppProjectAboutIntent",
+        {"AppProjectAboutSlot": null},
+        "AppProjectAboutSlot",
+        {
+            "contentType":"PlainText",
+            "content":"What's the project about?"
+        }
+    ));  
+}
+
+
+function AppProjectAboutIntent(intentRequest, callback){
+    let sessionAttributes = intentRequest.sessionAttributes;
+    const slots = intentRequest.currentIntent.slots;
+    const next = slots.AppProjectAboutSlots;
+    sessionAttributes = Object.assign(sessionAttributes,{"appProject":next});
+    elicitTimelineIntent(sessionAttributes, callback);  
+}
+
+function APIIntent(intentRequest, callback){
+    console.log(intentRequest);
+    let sessionAttributes = intentRequest.sessionAttributes;
+    const slots = intentRequest.currentIntent.slots;
+    const next = slots.APISlots;
+    sessionAttributes = Object.assign(sessionAttributes,{"API":next});
+    callback(elicitSlot(
+        sessionAttributes,
+        "ElseToKnowIntent",
+        {"ElseToKnowSlot": null},
+        "ElseToKnowSlot",
+        {
+            "contentType":"PlainText",
+            "content":"What else do we need to know about your project? (reply to this message)"
+        }
+    ));  
+}
+
+function ElseToKnowIntent(intentRequest, callback){
+    let sessionAttributes = intentRequest.sessionAttributes;
+    const slots = intentRequest.currentIntent.slots;
+    
+    slots.ElseToKnowSlot = intentRequest.inputTranscript;
+    sessionAttributes=Object.assign(sessionAttributes,{"APIMessage":slots.ElseToKnowSlot});
+    elicitTimelineIntent(sessionAttributes, callback);
+}
+    
+function OtherServiceIntent(intentRequest, callback){
+    let sessionAttributes = intentRequest.sessionAttributes;
+    const slots = intentRequest.currentIntent.slots;
+    
+    slots.OtherServiceSlot = intentRequest.inputTranscript;
+    sessionAttributes=Object.assign(sessionAttributes,{"otherService":slots.OtherServiceSlot});
+    elicitTimelineIntent(sessionAttributes, callback);
+}
+
 
 //close the conversation
 function SpecificServiceIntent(intentRequest, callback){

@@ -10,9 +10,9 @@
   },
   "outputDialogMode": "Text",
   "currentIntent": {
-    "name": "GreetingIntent",
+    "name": "ElseToKnowIntentIntent",
     "slots": {
-      "GeneralServiceSlots": "Learn more about Charlie Media"
+      "ElseToKnowSlot": "my message"
     },
     "confirmationStatus": "None"
   }

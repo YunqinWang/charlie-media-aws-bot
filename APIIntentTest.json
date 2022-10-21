@@ -10,9 +10,9 @@
   },
   "outputDialogMode": "Text",
   "currentIntent": {
-    "name": "GreetingIntent",
+    "name": "APIIntent",
     "slots": {
-      "GeneralServiceSlots": "Learn more about Charlie Media"
+      "APISlot": "Need implementation for an integration idea"
     },
     "confirmationStatus": "None"
   }
