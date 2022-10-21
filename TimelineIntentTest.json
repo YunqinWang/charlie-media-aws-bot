@@ -1,0 +1,19 @@
+{
+  "messageVersion": "1.0",
+  "invocationSource": "FulfillmentCodeHook",
+  "userId": "user-1",
+  "sessionAttributes": {},
+  "bot": {
+    "name": "Charlie_Bot",
+    "alias": "$LATEST",
+    "version": "$LATEST"
+  },
+  "outputDialogMode": "Text",
+  "currentIntent": {
+    "name": "TimelineIntent",
+    "slots": {
+      "TimlineSlot": "No rush - I want it to be great"
+    },
+    "confirmationStatus": "None"
+  }
+}

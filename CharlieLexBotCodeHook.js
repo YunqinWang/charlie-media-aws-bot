@@ -42,6 +42,16 @@ function dispatch(intentRequest, callback) {
         case "ProjectIntent":
             ProjectIntent(intentRequest, callback);
             break;
+        case "DomainIntent":
+            DomainIntent(intentRequest, callback);
+            break;
+        case "WebsiteIntent":
+            WebsiteIntent(intentRequest, callback);
+            break;
+        case "TimelineIntent":
+            elicitFirstName(intentRequest, callback);
+            break;
+        
         case "SpecificServiceIntent":
             SpecificServiceIntent(intentRequest, callback);
             break;
@@ -60,9 +70,10 @@ function dispatch(intentRequest, callback) {
 //Need API integrations
 //Other
 function GreetingIntent(intentRequest, callback){
-    const sessionAttributes = intentRequest.sessionAttributes;
+    let sessionAttributes = intentRequest.sessionAttributes;
     const slots = intentRequest.currentIntent.slots;
     const next = slots.GeneralServiceSlots;
+    sessionAttributes = Object.assign(sessionAttributes,{"generalService":next});
     switch(next){
         case "Learn more about Charlie Media":
             callback(elicitSlot(
@@ -76,11 +87,23 @@ function GreetingIntent(intentRequest, callback){
                 }
             ));
             // "content": "{\"messages\":[{\"type\":\"PlainText\",\"group\":1,\"value\":\"Hello\"},{\"type\":\"PlainText\",\"group\":2,\"value\":\"Hey\"}]}"
-            break;   
+            break;
+        
+        case "Need website help":
+            callback(elicitSlot(
+                sessionAttributes,
+                "DomainIntent",
+                {"DomainSlot": null},
+                "DomainSlot",
+                {
+                    "contentType": "PlainText",
+                    "content":"Awesome, do you have an existing domain?"
+                }
+            ));
         
         default:
             callback(close(sessionAttributes, 'Fulfilled',
-            {'contentType': 'PlainText', 'content': `Okay, you need ${next} `}));
+            {'contentType': 'PlainText', 'content': `Okay, you need ${next}.`}));
     }
 }
 
@@ -149,18 +172,7 @@ function TellMoreIntent(intentRequest, callback){
     console.log(slots)
     switch(next){
         case "Discuss project with us":
-            console.log("Discuss project")
-            callback(elicitSlot(
-                sessionAttributes, 
-                "ProjectIntent",
-                {"FirstNameSlot": null,
-                 "LastNameSlot": null},
-                "FirstNameSlot",
-                {
-                    "contentType":"PlainText",
-                    "content":"Great! Let's get some more information to make that connection. What's your first name?"
-                }
-            ));             
+            elicitFirstName(intentRequest, callback);         
             break;
         case "Back to the beginning":
             callback(elicitSlot(
@@ -179,14 +191,30 @@ function TellMoreIntent(intentRequest, callback){
             {'contentType': 'PlainText', 'content': `Okay, you need ${next} `}));
     }
 }
+function elicitFirstName(intentRequest, callback){
+    const sessionAttributes = intentRequest.sessionAttributes;
+    const slots = intentRequest.currentIntent.slots;
+    console.log("Discuss project")
+    callback(elicitSlot(
+        sessionAttributes, 
+        "ProjectIntent",
+        {"FirstNameSlot": null,
+         "LastNameSlot": null},
+        "FirstNameSlot",
+        {
+            "contentType":"PlainText",
+            "content":"Great! Let's get some more information to make that connection. What's your first name?"
+        }
+    ));
+}
 
-
-//ProjectIntent
+//ask for first name and last name
 function ProjectIntent(intentRequest, callback){
-    console.log("intentRequest",intentRequest);
     let sessionAttributes = intentRequest.sessionAttributes;
     const slots = intentRequest.currentIntent.slots;
-    console.log("ProjectIntent",slots);
+    
+    //after asking for first name, set the FirstNameSlot slot value 
+    //and ask for the last name
     if (slots.FirstNameSlot==null) {
         slots.FirstNameSlot = intentRequest.inputTranscript;
         sessionAttributes=Object.assign(sessionAttributes,{"firstName":slots.FirstNameSlot});
@@ -203,6 +231,8 @@ function ProjectIntent(intentRequest, callback){
         ))
     }
     
+    //after asking for the last name, set the LastNameSlot slot value
+    //and elicit SpecificServiceIntent
     else {
         slots.LastNameSlot = intentRequest.inputTranscript;
         sessionAttributes=Object.assign(sessionAttributes,{"lastName":slots.LastNameSlot});
@@ -219,10 +249,55 @@ function ProjectIntent(intentRequest, callback){
     };             
 }
 
+
+function DomainIntent(intentRequest, callback){
+    let sessionAttributes = intentRequest.sessionAttributes;
+    const slots = intentRequest.currentIntent.slots;
+    
+    console.log("domain intent", slots)
+
+    slots.DomainSlot = intentRequest.inputTranscript;
+    sessionAttributes=Object.assign(sessionAttributes,{"domain":slots.DomainSlot});
+    callback(elicitSlot(
+        sessionAttributes, 
+        "WebsiteIntent",
+        {"WebsiteSlot": null},
+        "WebsiteSlot",
+        {
+            "contentType":"PlainText",
+            "content":"What are you looking to accomplish with the website?"
+        }
+    ))
+
+}
+
+function WebsiteIntent(intentRequest, callback){
+    console.log(intentRequest);
+    let sessionAttributes = intentRequest.sessionAttributes;
+    const slots = intentRequest.currentIntent.slots;
+    const next = slots.WebsiteSlots;
+    sessionAttributes = Object.assign(sessionAttributes,{"website":next});
+    
+        callback(elicitSlot(
+            sessionAttributes,
+            "TimelineIntent",
+            {"TimelineSlot": null},
+            "TimelineSlot",
+            {
+                "contentType":"PlainText",
+                "content":"How quickly are you looking to have the project done?"
+            }
+        )); 
+
+                
+}
+
+//close the conversation
 function SpecificServiceIntent(intentRequest, callback){
     const slots = intentRequest.currentIntent.slots;
     let sessionAttributes = intentRequest.sessionAttributes;
     sessionAttributes=Object.assign(sessionAttributes,{"specificService":slots.SpecificServiceSlot});
+    
     callback(close(sessionAttributes, 'Fulfilled',
     {'contentType': 'PlainText', 'content': `Terrific! Our awesome team member, Somer Baier, will email you soon to share further information on these services & coordinate next steps! 🙂`}));
     
