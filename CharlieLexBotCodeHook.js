@@ -222,11 +222,11 @@ function LearnMoreIntent(intentRequest, callback){
                 sessionAttributes, 
                 "ProjectIntent",
                 {"FirstNameSlot": null,
-                 "LastNameSlot": null},
+                 "EmailSlot": null},
                 "FirstNameSlot",
                 {
                     "contentType":"PlainText",
-                    "content":"Great! Let's get some more information to make that connection. What's your first name?"
+                    "content":"Great! Let's get some more information to make that connection. What's your name?"
                 }
             ));             
             break; 
@@ -274,17 +274,18 @@ function elicitFirstName(intentRequest, callback){
         sessionAttributes, 
         "ProjectIntent",
         {"FirstNameSlot": null,
-         "LastNameSlot": null},
+         "EmailSlot": null},
         "FirstNameSlot",
         {
             "contentType":"PlainText",
-            "content":"Great! Let's get some more information to make that connection. What's your first name?"
+            "content":"Great! Let's get some more information to make that connection. What's your name?"
         }
     ));
 }
 
 //ask for first name and last name
 function ProjectIntent(intentRequest, callback){
+    console.log(JSON.stringify(intentRequest));
     let sessionAttributes = intentRequest.sessionAttributes;
     const slots = intentRequest.currentIntent.slots;
     
@@ -297,20 +298,20 @@ function ProjectIntent(intentRequest, callback){
             sessionAttributes, 
             "ProjectIntent",
             {"FirstNameSlot": intentRequest.inputTranscript,
-             "LastNameSlot": null},
-            "FirstNameSlot",
+             "EmailSlot": null},
+            "EmailSlot",
             {
                 "contentType":"PlainText",
-                "content":"What's your last name?"
+                "content":"What is the best email address for one of our team members to reach you?"
             }
         ))
     }
     
-    //after asking for the last name, set the LastNameSlot slot value
+    //after asking for the last name, set the EmailSlot slot value
     //and elicit SpecificServiceIntent
     else {
-        slots.LastNameSlot = intentRequest.inputTranscript;
-        sessionAttributes=Object.assign(sessionAttributes,{"lastName":slots.LastNameSlot});
+        slots.EmailSlot = intentRequest.inputTranscript;
+        sessionAttributes=Object.assign(sessionAttributes,{"email":slots.EmailSlot});
         callback(elicitSlot(
             sessionAttributes, 
             "SpecificServiceIntent",
