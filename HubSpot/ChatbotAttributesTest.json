@@ -1,7 +1,7 @@
 {
-    "email": "123@gmail.com",
     "name": "test name",
-    "genearl_service_inquired": "general service",
-    "specific_service_inquired": "specific service",
+    "email": "test@gmail.com",
+    "generalService": "general service",
+    "dueDate": "90",
     "domain":"domain.com"
 }
