@@ -1,7 +1,4 @@
 
-.lex-web-ui-frame{
-    width: 376px !important;
-}
 .toolbar.theme--dark {
     background-image: linear-gradient(-225deg, rgb(255, 195, 113) 20%, rgb(255, 95, 109) 100%) !important;
 }
@@ -39,11 +36,6 @@
     font-size: 1rem;
 }
 
-.message-bubble {
-    border-radius: 10px !important;
-    padding: 2px 18px !important;
-}
-
 .message-text {
   color: #000000;
   width: 100%;
@@ -74,17 +66,35 @@
     font-size: 14px !important;
 }*/
 
+.message-bubble {
+    border-radius: 6px !important;
+    padding: 0px 12px !important;
+    margin: 20px 10px !important;
+}
+
 .card__actions .btn {
   margin: 4px 4px !important;
   font-size: 1em !important;
   min-width: 44px !important;
-  background-color: #afcffa !important;
+  background-color: #cde3ff !important;
 } 
 
 button.min-button {
-    border-radius: 60px;
+    border-radius: 50%;
+}
+.btn{
+    box-shadow: none !important;
+}
+
+.btn__content {
+    text-transform: none !important;
 }
 
 .message-button {
     display: none;
+}
+
+.red{
+    background-image: linear-gradient(-225deg, rgb(255, 195, 113) 20%, rgb(255, 95, 109) 100%) !important;
+    border:none !important;
 }
