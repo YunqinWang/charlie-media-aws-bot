@@ -1,5 +1,9 @@
+const AWS = require('aws-sdk')
+const lambda = new AWS.Lambda({ region: "us-east-1" })
+
 // Close dialog with the customer, reporting fulfillmentState of Failed or Fulfilled
 function close(sessionAttributes, fulfillmentState, message) {
+    invokeHubSpotCreateContact(sessionAttributes)
     return {
         sessionAttributes,
         dialogAction: {
@@ -8,6 +12,28 @@ function close(sessionAttributes, fulfillmentState, message) {
             message,
         },
     };
+}
+
+//invode lambda function HubSpot_Create_New_Contact
+function invokeHubSpotCreateContact(payload) {
+    console.log("payload: " + JSON.stringify(payload));
+    return new Promise((resolve, reject) => {
+        const params = {
+            FunctionName: 'HubSpot_Create_New_Contact',
+            InvocationType: 'Event',
+            Payload: JSON.stringify(payload)
+        };
+        
+        lambda.invoke(params, (err, results) => {
+            if (err) {
+                console.log(err, err.stack);
+                return reject(err)
+            } else {
+                console.log(`Successfully sent to HubSpot_Create_New_Contact.`);
+                return resolve(results);
+            }
+        });
+    })
 }
 
 // Elicit the next slot
@@ -53,7 +79,7 @@ function dispatch(intentRequest, callback) {
             WebsiteIntent(intentRequest, callback);
             break;
         case "TimelineIntent":
-            elicitFirstName(intentRequest, callback);
+            elicitName(intentRequest, callback);
             break;
         case "AppIntent":
             AppIntent(intentRequest, callback);
@@ -221,9 +247,9 @@ function LearnMoreIntent(intentRequest, callback){
             callback(elicitSlot(
                 sessionAttributes, 
                 "ProjectIntent",
-                {"FirstNameSlot": null,
+                {"NameSlot": null,
                  "EmailSlot": null},
-                "FirstNameSlot",
+                "NameSlot",
                 {
                     "contentType":"PlainText",
                     "content":"Great! Let's get some more information to make that connection. What's your name?"
@@ -247,7 +273,7 @@ function TellMoreIntent(intentRequest, callback){
     console.log(slots)
     switch(next){
         case "Discuss project with us":
-            elicitFirstName(intentRequest, callback);         
+            elicitName(intentRequest, callback);         
             break;
         case "Back to the beginning":
             callback(elicitSlot(
@@ -266,16 +292,16 @@ function TellMoreIntent(intentRequest, callback){
             {'contentType': 'PlainText', 'content': `Okay, you need ${next} `}));
     }
 }
-function elicitFirstName(intentRequest, callback){
+function elicitName(intentRequest, callback){
     const sessionAttributes = intentRequest.sessionAttributes;
     const slots = intentRequest.currentIntent.slots;
     console.log("Discuss project")
     callback(elicitSlot(
         sessionAttributes, 
         "ProjectIntent",
-        {"FirstNameSlot": null,
+        {"NameSlot": null,
          "EmailSlot": null},
-        "FirstNameSlot",
+        "NameSlot",
         {
             "contentType":"PlainText",
             "content":"Great! Let's get some more information to make that connection. What's your name?"
@@ -289,15 +315,15 @@ function ProjectIntent(intentRequest, callback){
     let sessionAttributes = intentRequest.sessionAttributes;
     const slots = intentRequest.currentIntent.slots;
     
-    //after asking for first name, set the FirstNameSlot slot value 
+    //after asking for first name, set the NameSlot slot value 
     //and ask for the last name
-    if (slots.FirstNameSlot==null) {
-        slots.FirstNameSlot = intentRequest.inputTranscript;
-        sessionAttributes=Object.assign(sessionAttributes,{"firstName":slots.FirstNameSlot});
+    if (slots.NameSlot==null) {
+        slots.NameSlot = intentRequest.inputTranscript;
+        sessionAttributes=Object.assign(sessionAttributes,{"name":slots.NameSlot});
         callback(elicitSlot(
             sessionAttributes, 
             "ProjectIntent",
-            {"FirstNameSlot": intentRequest.inputTranscript,
+            {"NameSlot": intentRequest.inputTranscript,
              "EmailSlot": null},
             "EmailSlot",
             {
