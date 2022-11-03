@@ -1,0 +1,25 @@
+{
+  "messageVersion": "1.0",
+  "invocationSource": "FulfillmentCodeHook",
+  "userId": "user-1",
+  "sessionAttributes": {
+      "email": "123@gmail.com",
+      "name": "test name",
+      "genearl_service_inquired": "general service",
+      "specific_service_inquired": "specific service",
+      "domain":"domain.com"
+  },
+  "bot": {
+    "name": "Charlie_Bot",
+    "alias": "$LATEST",
+    "version": "$LATEST"
+  },
+  "outputDialogMode": "Text",
+  "currentIntent": {
+    "name": "SpecificServiceIntent",
+    "slots": {
+      "specificService": "Custom Web Design/Dev"
+    },
+    "confirmationStatus": "None"
+  }
+}
