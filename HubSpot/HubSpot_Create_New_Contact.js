@@ -14,10 +14,10 @@ exports.handler = async (event) => {
     //     "serviceInquired": "web development"
     // }
     //var newContactInfo = JSON.parse(event)
+    console.log(event);
     var newContactInfo = event
-    console.log(newContactInfo)
     const contactRes = await createContact(newContactInfo)
-    //console.log(`Contact created. Id: ${contactRes.id}`)
+    console.log(`Contact created. Id: ${contactRes.id}`)
 
     const response = {
         statusCode: 200,
@@ -28,12 +28,10 @@ exports.handler = async (event) => {
 
 // HubSpot
 function createContact(newContactInfo) {
+
     const properties = {
       "email": newContactInfo.email,
-      "name": newContactInfo.name,
-      "genearl_service_inquired": newContactInfo.generalService,
-      "specific_service_inquired": newContactInfo.specificService,
-      "domain":newContactInfo.domain,
+      
     }
     
     const options = {
