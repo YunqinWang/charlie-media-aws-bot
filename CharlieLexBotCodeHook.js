@@ -226,7 +226,6 @@ function LearnMoreIntent(intentRequest, callback){
     const next = slots.LearnMoreSlot;
     switch(next){
         case "Tell me more":
-            console.log("Tell me more")
             callback(elicitSlot(
                 sessionAttributes,
                 "TellMoreIntent",
@@ -249,21 +248,7 @@ function LearnMoreIntent(intentRequest, callback){
                     "content":"How can we help you today?"
                 }
             ));             
-            break; 
-        case "Discuss project with us":
-            console.log("Discuss project")
-            callback(elicitSlot(
-                sessionAttributes, 
-                "ProjectIntent",
-                {"NameSlot": null,
-                 "EmailSlot": null},
-                "NameSlot",
-                {
-                    "contentType":"PlainText",
-                    "content":"Great! Let's get some more information to make that connection. What's your name?"
-                }
-            ));             
-            break; 
+            break;  
         
         default:
             callback(close(sessionAttributes, 'Fulfilled',
@@ -278,11 +263,10 @@ function TellMoreIntent(intentRequest, callback){
     const sessionAttributes = intentRequest.sessionAttributes;
     const slots = intentRequest.currentIntent.slots;
     const next = slots.TellMoreSlot;
-    console.log(slots)
     switch(next){
-        case "Discuss project with us":
-            elicitName(intentRequest, callback);         
-            break;
+        // case "Discuss project with us":
+        //     elicitName(intentRequest, callback);         
+        //     break;
         case "Back to the beginning":
             callback(elicitSlot(
                 sessionAttributes, 
@@ -307,35 +291,52 @@ function elicitName(intentRequest, callback){
         const next = slots.TimelineSlot;
         sessionAttributes.dueDate=next;
     }
-    console.log("Discuss project")
     callback(elicitSlot(
         sessionAttributes, 
         "ProjectIntent",
-        {"NameSlot": null,
+        {"FirstNameSlot": null,
+         "LastNameSlot": null,
          "EmailSlot": null},
-        "NameSlot",
+        "FirstNameSlot",
         {
             "contentType":"PlainText",
-            "content":"Great! Let's get some more information to make that connection. What's your name?"
+            "content":"Great! Let's get some more information to make that connection. What's your first name?"
         }
     ));
 }
 
 //ask for first name and last name
 function ProjectIntent(intentRequest, callback){
-    console.log(JSON.stringify(intentRequest));
     let sessionAttributes = intentRequest.sessionAttributes;
     const slots = intentRequest.currentIntent.slots;
     
-    //after asking for first name, set the NameSlot slot value 
+    //after asking for first name, set the FirstNameSlot slot value 
     //and ask for the last name
-    if (slots.NameSlot==null) {
-        slots.NameSlot = intentRequest.inputTranscript;
-        sessionAttributes.name=slots.NameSlot;
+    if (slots.FirstNameSlot==null) {
+        slots.FirstNameSlot = intentRequest.inputTranscript;
+        sessionAttributes.firstName=slots.FirstNameSlot;
         callback(elicitSlot(
             sessionAttributes, 
             "ProjectIntent",
-            {"NameSlot": intentRequest.inputTranscript,
+            {"FirstNameSlot": intentRequest.inputTranscript,
+             "LastNameSlot": null,
+             "EmailSlot": null},
+            "LastNameSlot",
+            {
+                "contentType":"PlainText",
+                "content":"What is your last name?"
+            }
+        ))
+        return
+    }
+    else if (slots.LastNameSlot==null) {
+        slots.LastNameSlot = intentRequest.inputTranscript;
+        sessionAttributes.lastName=slots.LastNameSlot;
+        callback(elicitSlot(
+            sessionAttributes, 
+            "ProjectIntent",
+            { "FirstNameSlot": slots.FirstNameSlot,
+              "LastNameSlot":slots.LastNameSlot,
              "EmailSlot": null},
             "EmailSlot",
             {
@@ -344,22 +345,13 @@ function ProjectIntent(intentRequest, callback){
             }
         ))
     }
-    
     //after asking for the last name, set the EmailSlot slot value
     //and elicit SpecificServiceIntent
     else {
         slots.EmailSlot = intentRequest.inputTranscript;
         sessionAttributes.email=slots.EmailSlot;
-        callback(elicitSlot(
-            sessionAttributes, 
-            "SpecificServiceIntent",
-            {"SpecificServiceSlot": null},
-            "SpecificServiceSlot",
-            {
-                "contentType":"PlainText",
-                "content":"What service are you specifically interested in connecting with us about?"
-            }
-        ))
+        callback(close(sessionAttributes, 'Fulfilled',
+        {'contentType': 'PlainText', 'content': `Terrific! Our awesome team member, Somer Baier, will email you soon to share further information on these services & coordinate next steps! 🙂`}));
     };             
 }
 
@@ -466,15 +458,15 @@ function OtherServiceIntent(intentRequest, callback){
 
 
 //close the conversation
-function SpecificServiceIntent(intentRequest, callback){
-    const slots = intentRequest.currentIntent.slots;
-    let sessionAttributes = intentRequest.sessionAttributes;
-    sessionAttributes.specificService=slots.SpecificServiceSlot;
+// function SpecificServiceIntent(intentRequest, callback){
+//     const slots = intentRequest.currentIntent.slots;
+//     let sessionAttributes = intentRequest.sessionAttributes;
+//     sessionAttributes.specificService=slots.SpecificServiceSlot;
     
-    callback(close(sessionAttributes, 'Fulfilled',
-    {'contentType': 'PlainText', 'content': `Terrific! Our awesome team member, Somer Baier, will email you soon to share further information on these services & coordinate next steps! 🙂`}));
+//     callback(close(sessionAttributes, 'Fulfilled',
+//     {'contentType': 'PlainText', 'content': `Terrific! Our awesome team member, Somer Baier, will email you soon to share further information on these services & coordinate next steps! 🙂`}));
     
-}
+// }
  
 
 
