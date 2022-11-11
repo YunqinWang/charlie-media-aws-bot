@@ -2,8 +2,10 @@ const AWS = require('aws-sdk')
 const lambda = new AWS.Lambda({ region: "us-east-1" })
 
 // Close dialog with the customer, reporting fulfillmentState of Failed or Fulfilled
-function close(sessionAttributes, fulfillmentState, message) {
+async function close(sessionAttributes, fulfillmentState, message) {
+    const hubSpotContactAnswer = await
     invokeHubSpotCreateContact(sessionAttributes)
+    invokeHubSpotWebhooksPassthrough(hubSpotContactAnswer)
     return {
         sessionAttributes,
         dialogAction: {
@@ -14,13 +16,13 @@ function close(sessionAttributes, fulfillmentState, message) {
     };
 }
 
-//invode lambda function HubSpot_Create_New_Contact
+//invoke lambda function HubSpot_Create_New_Contact
 function invokeHubSpotCreateContact(payload) {
     console.log("payload: " + JSON.stringify(payload));
     return new Promise((resolve, reject) => {
         const params = {
             FunctionName: 'HubSpot_Create_New_Contact',
-            InvocationType: 'Event',
+            InvocationType: 'RequestResponse',
             Payload: JSON.stringify(payload)
         };
         
@@ -30,6 +32,29 @@ function invokeHubSpotCreateContact(payload) {
                 return reject(err)
             } else {
                 console.log(`Successfully sent to HubSpot_Create_New_Contact.`);
+                return resolve(results);
+            }
+        });
+    })
+}
+
+
+//invoke lambda function HubSpot_Webhooks_Passthrough
+function invokeHubSpotWebhooksPassthrough(payload) {
+    console.log("payload: " + JSON.stringify(payload));
+    return new Promise((resolve, reject) => {
+        const params = {
+            FunctionName: 'HubSpot_Webhooks_Passthrough',
+            InvocationType: 'Event',
+            Payload: JSON.stringify(payload)
+        };
+        
+        lambda.invoke(params, (err, results) => {
+            if (err) {
+                console.log(err, err.stack);
+                return reject(err)
+            } else {
+                console.log(`Successfully sent to  HubSpot_Webhooks_Passthrough.`);
                 return resolve(results);
             }
         });

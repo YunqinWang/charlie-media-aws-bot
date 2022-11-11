@@ -17,11 +17,23 @@ exports.handler = async (event) => {
     console.log(event);
     var newContactInfo = event
     const contactRes = await createContact(newContactInfo)
-    console.log(`Contact created. Id: ${contactRes.id}`)
+    console.log(`Contact created. Id: ${newContactInfo.id}`)
 
+     // event = {
+    //     body: [{
+    //         objectId: [hsContactId],
+    //         subscriptionType: "contact.creation",
+    //         changeSource: "BOT"
+    //     }]
+    // }
     const response = {
-        statusCode: 200,
-        body: JSON.stringify('Done!'),
+        // statusCode: 200,
+        // body: JSON.stringify('Done!'),
+        body: [{
+                    objectId: [newContactInfo.id],
+                    subscriptionType: "contact.creation",
+                    changeSource: "BOT"
+                }]
     };
     return response;
 };
