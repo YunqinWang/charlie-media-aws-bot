@@ -2,10 +2,9 @@ const AWS = require('aws-sdk')
 const lambda = new AWS.Lambda({ region: "us-east-1" })
 
 // Close dialog with the customer, reporting fulfillmentState of Failed or Fulfilled
-async function close(sessionAttributes, fulfillmentState, message) {
-    const hubSpotContactAnswer = await
-    invokeHubSpotCreateContact(sessionAttributes)
-    invokeHubSpotWebhooksPassthrough(hubSpotContactAnswer)
+function close(sessionAttributes, fulfillmentState, message) {
+    // const hubSpotContactAnswer = await invokeHubSpotCreateContact(sessionAttributes)
+    //await invokeHubSpotWebhooksPassthrough(hubSpotContactAnswer)
     return {
         sessionAttributes,
         dialogAction: {
@@ -54,7 +53,7 @@ function invokeHubSpotWebhooksPassthrough(payload) {
                 console.log(err, err.stack);
                 return reject(err)
             } else {
-                console.log(`Successfully sent to  HubSpot_Webhooks_Passthrough.`);
+                console.log(`Successfully sent to HubSpot_Webhooks_Passthrough.`);
                 return resolve(results);
             }
         });
@@ -119,9 +118,8 @@ function dispatch(intentRequest,context,callback) {
             ElseToKnowIntent(intentRequest, callback);
         case "OtherServiceIntent":
             OtherServiceIntent(intentRequest, callback);
-
-        case "SpecificServiceIntent":
-            SpecificServiceIntent(intentRequest, callback);
+        case "EmailIntent":
+            EmailIntent(intentRequest, callback);
             break;
         default:
             callback(close(sessionAttributes, 'Fulfilled',
@@ -135,12 +133,12 @@ function InitialIntent(intentRequest, context, callback){
     console.log(context.awsRequestId);
     let sessionAttributes = {
         id: context.awsRequestId,
-        name :"",
+        firstName :"",
+        lastName:"",
         email:"",
         generalService:"",
         dueDate:"",
         domain:"",
-        specificService:"",
     };
     callback(elicitSlot(
         sessionAttributes,
@@ -320,8 +318,8 @@ function elicitName(intentRequest, callback){
         sessionAttributes, 
         "ProjectIntent",
         {"FirstNameSlot": null,
-         "LastNameSlot": null,
-         "EmailSlot": null},
+         "LastNameSlot": null
+    },
         "FirstNameSlot",
         {
             "contentType":"PlainText",
@@ -333,51 +331,39 @@ function elicitName(intentRequest, callback){
 //ask for first name and last name
 function ProjectIntent(intentRequest, callback){
     let sessionAttributes = intentRequest.sessionAttributes;
-    const slots = intentRequest.currentIntent.slots;
-    
+    let slots = intentRequest.currentIntent.slots; 
+
     //after asking for first name, set the FirstNameSlot slot value 
     //and ask for the last name
-    if (slots.FirstNameSlot==null) {
+    if (sessionAttributes.firstName=="") {
         slots.FirstNameSlot = intentRequest.inputTranscript;
         sessionAttributes.firstName=slots.FirstNameSlot;
         callback(elicitSlot(
             sessionAttributes, 
             "ProjectIntent",
             {"FirstNameSlot": intentRequest.inputTranscript,
-             "LastNameSlot": null,
-             "EmailSlot": null},
+             "LastNameSlot": null
+             },
             "LastNameSlot",
             {
                 "contentType":"PlainText",
                 "content":"What is your last name?"
             }
         ))
-        return
     }
-    else if (slots.LastNameSlot==null) {
-        slots.LastNameSlot = intentRequest.inputTranscript;
-        sessionAttributes.lastName=slots.LastNameSlot;
+    else {
+        sessionAttributes.lastName= intentRequest.inputTranscript;
         callback(elicitSlot(
             sessionAttributes, 
-            "ProjectIntent",
-            { "FirstNameSlot": slots.FirstNameSlot,
-              "LastNameSlot":slots.LastNameSlot,
-             "EmailSlot": null},
+            "EmailIntent",
+            { "EmailSlot": null},
             "EmailSlot",
             {
                 "contentType":"PlainText",
                 "content":"What is the best email address for one of our team members to reach you?"
             }
         ))
-    }
-    //after asking for the last name, set the EmailSlot slot value
-    //and elicit SpecificServiceIntent
-    else {
-        slots.EmailSlot = intentRequest.inputTranscript;
-        sessionAttributes.email=slots.EmailSlot;
-        callback(close(sessionAttributes, 'Fulfilled',
-        {'contentType': 'PlainText', 'content': `Terrific! Our awesome team member, Somer Baier, will email you soon to share further information on these services & coordinate next steps! 🙂`}));
-    };             
+    }      
 }
 
 
@@ -446,7 +432,6 @@ function AppProjectAboutIntent(intentRequest, callback){
 }
 
 function APIIntent(intentRequest, callback){
-    console.log(intentRequest);
     let sessionAttributes = intentRequest.sessionAttributes;
     const slots = intentRequest.currentIntent.slots;
     const next = slots.APISlots;
@@ -483,15 +468,18 @@ function OtherServiceIntent(intentRequest, callback){
 
 
 //close the conversation
-// function SpecificServiceIntent(intentRequest, callback){
-//     const slots = intentRequest.currentIntent.slots;
-//     let sessionAttributes = intentRequest.sessionAttributes;
-//     sessionAttributes.specificService=slots.SpecificServiceSlot;
+function EmailIntent(intentRequest, callback){
+    console.log("email intent")
     
-//     callback(close(sessionAttributes, 'Fulfilled',
-//     {'contentType': 'PlainText', 'content': `Terrific! Our awesome team member, Somer Baier, will email you soon to share further information on these services & coordinate next steps! 🙂`}));
+    let sessionAttributes = intentRequest.sessionAttributes;
+    sessionAttributes.email= intentRequest.inputTranscript;
+
+    console.log(sessionAttributes)
+
+    callback(close(sessionAttributes, 'Fulfilled',
+    {'contentType': 'PlainText', 'content': `Terrific! Our awesome team member, Somer Baier, will email you soon to share further information on these services & coordinate next steps! 🙂`}));
     
-// }
+}
  
 
 
