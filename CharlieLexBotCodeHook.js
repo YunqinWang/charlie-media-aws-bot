@@ -3,8 +3,7 @@ const lambda = new AWS.Lambda({ region: "us-east-1" })
 
 // Close dialog with the customer, reporting fulfillmentState of Failed or Fulfilled
 function close(sessionAttributes, fulfillmentState, message) {
-    // const hubSpotContactAnswer = await invokeHubSpotCreateContact(sessionAttributes)
-    //await invokeHubSpotWebhooksPassthrough(hubSpotContactAnswer)
+   
     return {
         sessionAttributes,
         dialogAction: {
@@ -14,6 +13,18 @@ function close(sessionAttributes, fulfillmentState, message) {
         },
     };
 }
+
+async function sendToHubSpot(sessionAttributes,callback){
+    callback(close(sessionAttributes, 'Fulfilled',
+    {'contentType': 'PlainText', 'content': `Terrific! Our awesome team member, Somer Baier, will email you soon to share further information on these services & coordinate next steps! 🙂`}))
+
+    let hubSpotContactAnswer = await invokeHubSpotCreateContact(sessionAttributes)
+    console.log("hubSpotContactAnswer",hubSpotContactAnswer);
+    //hubSpotContactAnswer = JSON.parse( hubSpotContactAnswer);
+    console.log("payload",hubSpotContactAnswer.Payload);
+    await invokeHubSpotWebhooksPassthrough(hubSpotContactAnswer.Payload)
+}
+
 
 //invoke lambda function HubSpot_Create_New_Contact
 function invokeHubSpotCreateContact(payload) {
@@ -469,15 +480,12 @@ function OtherServiceIntent(intentRequest, callback){
 
 //close the conversation
 function EmailIntent(intentRequest, callback){
-    console.log("email intent")
-    
     let sessionAttributes = intentRequest.sessionAttributes;
     sessionAttributes.email= intentRequest.inputTranscript;
 
     console.log(sessionAttributes)
 
-    callback(close(sessionAttributes, 'Fulfilled',
-    {'contentType': 'PlainText', 'content': `Terrific! Our awesome team member, Somer Baier, will email you soon to share further information on these services & coordinate next steps! 🙂`}));
+   sendToHubSpot(sessionAttributes, callback);
     
 }
  
