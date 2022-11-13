@@ -1,0 +1,11 @@
+{
+    "body": [
+      {
+        "objectId": [
+          "e0a51e10-0ade-43a7-b617-1966752e5522"
+        ],
+        "subscriptionType": "contact.creation",
+        "changeSource": "BOT"
+      }
+    ]
+}

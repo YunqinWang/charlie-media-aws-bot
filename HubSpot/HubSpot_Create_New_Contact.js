@@ -6,7 +6,6 @@ const hsContactsUrl = '/crm/v3/objects/contacts'
 
 exports.handler = async (event) => {
     // event example
-    console.log(event)
     // {
     //     "email": "bcooper@biglytics.net",
     //     "firstName": "Bryan",
@@ -14,12 +13,13 @@ exports.handler = async (event) => {
     //     "serviceInquired": "web development"
     // }
     //var newContactInfo = JSON.parse(event)
-    console.log(event);
-    var newContactInfo = event
-    const contactRes = await createContact(newContactInfo)
-    console.log(`Contact created. Id: ${newContactInfo.id}`)
 
-     // event = {
+    let newContactInfo = event
+    const contactRes = await createContact(newContactInfo)
+    console.log("contactRes",contactRes);
+    let contactId = contactRes.id;
+
+    // event = {
     //     body: [{
     //         objectId: [hsContactId],
     //         subscriptionType: "contact.creation",
@@ -30,7 +30,7 @@ exports.handler = async (event) => {
         // statusCode: 200,
         // body: JSON.stringify('Done!'),
         body: [{
-                    objectId: [newContactInfo.id],
+                    objectId: [contactId], // use contactRes
                     subscriptionType: "contact.creation",
                     changeSource: "BOT"
                 }]
