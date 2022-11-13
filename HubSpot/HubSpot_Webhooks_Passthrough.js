@@ -20,8 +20,15 @@ exports.handler = async (event) => {
     //         changeSource: "BOT"
     //     }]
     // }
-    const body = JSON.parse(event.body)
-    console.log(event.body)
+
+    let body;
+    //check if event.body is a string
+    try {
+        body = JSON.parse(event).body;
+    } catch (e) {
+        body = event.body;
+    }
+    
     for (var i = 0; i < body.length; i++) {
         var data = body[i]
         const subType = data.subscriptionType
