@@ -28,7 +28,7 @@ async function sendToHubSpot(sessionAttributes,callback){
 
 //invoke lambda function HubSpot_Create_New_Contact
 function invokeHubSpotCreateContact(payload) {
-    console.log("payload: " + JSON.stringify(payload));
+    console.log("create contact payload: " + JSON.stringify(payload));
     return new Promise((resolve, reject) => {
         const params = {
             FunctionName: 'HubSpot_Create_New_Contact',
@@ -144,8 +144,8 @@ function InitialIntent(intentRequest, context, callback){
     console.log(context.awsRequestId);
     let sessionAttributes = {
         id: context.awsRequestId,
-        firstName :"",
-        lastName:"",
+        firstname :"",
+        lastname:"",
         email:"",
         generalService:"",
         dueDate:"",
@@ -346,9 +346,9 @@ function ProjectIntent(intentRequest, callback){
 
     //after asking for first name, set the FirstNameSlot slot value 
     //and ask for the last name
-    if (sessionAttributes.firstName=="") {
+    if (sessionAttributes.firstname=="") {
         slots.FirstNameSlot = intentRequest.inputTranscript;
-        sessionAttributes.firstName=slots.FirstNameSlot;
+        sessionAttributes.firstname=slots.FirstNameSlot;
         callback(elicitSlot(
             sessionAttributes, 
             "ProjectIntent",
@@ -363,7 +363,7 @@ function ProjectIntent(intentRequest, callback){
         ))
     }
     else {
-        sessionAttributes.lastName= intentRequest.inputTranscript;
+        sessionAttributes.lastname= intentRequest.inputTranscript;
         callback(elicitSlot(
             sessionAttributes, 
             "EmailIntent",

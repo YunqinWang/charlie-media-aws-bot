@@ -43,7 +43,8 @@ function createContact(newContactInfo) {
 
     const properties = {
       "email": newContactInfo.email,
-      
+      "firstname":newContactInfo.firstname,
+      "lastname":newContactInfo.lastname,
     }
     
     const options = {
