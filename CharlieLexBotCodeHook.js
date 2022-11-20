@@ -150,6 +150,7 @@ function InitialIntent(intentRequest, context, callback){
         generalService:"",
         dueDate:"",
         domain:"",
+        message:"",
     };
     callback(elicitSlot(
         sessionAttributes,
@@ -176,7 +177,6 @@ function GreetingIntent(intentRequest, callback){
     let sessionAttributes = intentRequest.sessionAttributes;
     const slots = intentRequest.currentIntent.slots;
     const next = slots.GeneralServiceSlots;
-    sessionAttributes.generalService=next;
     switch(next){
         case "Learn more about Charlie Media":
             callback(elicitSlot(
@@ -380,9 +380,12 @@ function ProjectIntent(intentRequest, callback){
 
 function DomainIntent(intentRequest, callback){
     let sessionAttributes = intentRequest.sessionAttributes;
+    sessionAttributes.generalService= "Website help";
+
     const slots = intentRequest.currentIntent.slots;
     slots.DomainSlot = intentRequest.inputTranscript;
     sessionAttributes.domain=slots.DomainSlot;
+
     callback(elicitSlot(
         sessionAttributes, 
         "WebsiteIntent",
@@ -399,7 +402,8 @@ function WebsiteIntent(intentRequest, callback){
     let sessionAttributes = intentRequest.sessionAttributes;
     const slots = intentRequest.currentIntent.slots;
     const next = slots.WebsiteSlots;
-    sessionAttributes.generalService= sessionAttributes.generalService + "--" + next;
+    
+    sessionAttributes.message= slots.WebsiteSlot;
     elicitTimelineIntent(sessionAttributes, callback);  
 }
 
@@ -419,8 +423,8 @@ function elicitTimelineIntent(sessionAttributes, callback){
 function AppIntent(intentRequest, callback){
     let sessionAttributes = intentRequest.sessionAttributes;
     const slots = intentRequest.currentIntent.slots;
-    const next = slots.AppSlots;
-    sessionAttributes.generalService= sessionAttributes.generalService + "--" + next;
+    sessionAttributes.generalService= "Web/mobile help";
+    sessionAttributes.message= slots.AppSlot;
     callback(elicitSlot(
         sessionAttributes,
         "AppProjectAboutIntent",
@@ -435,18 +439,25 @@ function AppIntent(intentRequest, callback){
 
 
 function AppProjectAboutIntent(intentRequest, callback){
+    console.log("AppProjectAboutIntent");
     let sessionAttributes = intentRequest.sessionAttributes;
     const slots = intentRequest.currentIntent.slots;
-    const next = slots.AppProjectAboutSlots;
-    sessionAttributes.generalService= sessionAttributes.generalService + "--" + next;
+    //const next = slots.AppSlots;
+    //sessionAttributes.message= slots.AppSlots;
+    console.log(slots);
+    sessionAttributes.message= sessionAttributes.message+ ". "+slots.AppProjectAboutSlot;
+    console.log(slots);
     elicitTimelineIntent(sessionAttributes, callback);  
 }
 
 function APIIntent(intentRequest, callback){
     let sessionAttributes = intentRequest.sessionAttributes;
     const slots = intentRequest.currentIntent.slots;
-    const next = slots.APISlots;
-    sessionAttributes.generalService= sessionAttributes.generalService + "--" + next;
+
+    sessionAttributes.generalService= "API Integration";
+    
+    sessionAttributes.message= slots.APISlot;
+    console.log("api",sessionAttributes)
     callback(elicitSlot(
         sessionAttributes,
         "ElseToKnowIntent",
@@ -464,16 +475,17 @@ function ElseToKnowIntent(intentRequest, callback){
     const slots = intentRequest.currentIntent.slots;
     
     slots.ElseToKnowSlot = intentRequest.inputTranscript;
-    sessionAttributes.generalService= sessionAttributes.generalService + "--" + slots.ElseToKnowSlot;
+
+    sessionAttributes.message= sessionAttributes.message + " "+slots.ElseToKnowSlot;
     elicitTimelineIntent(sessionAttributes, callback);
 }
     
 function OtherServiceIntent(intentRequest, callback){
     let sessionAttributes = intentRequest.sessionAttributes;
     const slots = intentRequest.currentIntent.slots;
-    
     slots.OtherServiceSlot = intentRequest.inputTranscript;
-    sessionAttributes.generalService= sessionAttributes.generalService + "--" + slots.OtherServiceSlot;
+    sessionAttributes.generalService==""? sessionAttributes.generalService:"Other";
+
     elicitTimelineIntent(sessionAttributes, callback);
 }
 
